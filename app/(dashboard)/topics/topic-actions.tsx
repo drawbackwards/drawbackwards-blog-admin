@@ -1,23 +1,47 @@
 "use client";
 
 import { useState } from "react";
-import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { updateTopicStatus } from "./actions";
 
 export default function TopicActions({ topicId }: { topicId: string }) {
-  const [loading, setLoading] = useState<"approve" | "reject" | null>(null);
+  const [loading, setLoading] = useState<"reject" | "draft" | null>(null);
+  const [queued, setQueued] = useState(false);
   const router = useRouter();
-  const supabase = createClient();
 
-  async function handleAction(action: "approved" | "rejected") {
-    setLoading(action === "approved" ? "approve" : "reject");
-    await supabase
-      .from("topics")
-      .update({ status: action })
-      .eq("id", topicId);
+  async function handleReject() {
+    setLoading("reject");
+    await updateTopicStatus(topicId, "rejected");
     router.refresh();
     setLoading(null);
+  }
+
+  async function handleDraft() {
+    setLoading("draft");
+
+    const resp = await fetch("/api/generate-draft", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ topicId }),
+    });
+
+    if (resp.ok) {
+      await updateTopicStatus(topicId, "approved");
+      setQueued(true);
+      router.refresh();
+    } else {
+      const { error } = await resp.json();
+      alert(`Failed to trigger draft: ${error}`);
+    }
+
+    setLoading(null);
+  }
+
+  if (queued) {
+    return (
+      <span className="text-xs text-gray-400 shrink-0">Generating...</span>
+    );
   }
 
   return (
@@ -27,7 +51,7 @@ export default function TopicActions({ topicId }: { topicId: string }) {
         variant="outline"
         className="text-xs h-7"
         disabled={!!loading}
-        onClick={() => handleAction("rejected")}
+        onClick={handleReject}
       >
         {loading === "reject" ? "..." : "Reject"}
       </Button>
@@ -35,9 +59,9 @@ export default function TopicActions({ topicId }: { topicId: string }) {
         size="sm"
         className="text-xs h-7 bg-gray-900 hover:bg-gray-700"
         disabled={!!loading}
-        onClick={() => handleAction("approved")}
+        onClick={handleDraft}
       >
-        {loading === "approve" ? "..." : "Draft this"}
+        {loading === "draft" ? "Queuing..." : "Draft this"}
       </Button>
     </div>
   );

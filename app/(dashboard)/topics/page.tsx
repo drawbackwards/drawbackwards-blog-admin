@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { Badge } from "@/components/ui/badge";
 import TopicActions from "./topic-actions";
+import { revalidatePath } from "next/cache";
 
 export const dynamic = "force-dynamic";
 
