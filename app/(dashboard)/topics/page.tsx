@@ -89,10 +89,17 @@ export default async function TopicsPage({
             className="bg-white border border-gray-100 rounded-lg p-4 flex items-start justify-between gap-4"
           >
             <div className="space-y-1.5 min-w-0">
+              <span className="font-bold text-gray-900 text-base">
+                {topic.title}
+              </span>
+
+              {topic.summary && (
+                <p className="text-sm text-gray-500 leading-snug line-clamp-2">
+                  {topic.summary}
+                </p>
+              )}
+
               <div className="flex items-center gap-2 flex-wrap">
-                <span className="font-medium text-gray-900 text-sm">
-                  {topic.title}
-                </span>
                 {topic.audience && (
                   <span
                     className={`text-xs px-2 py-0.5 rounded-full font-medium ${
@@ -107,32 +114,34 @@ export default async function TopicsPage({
                     {topic.theme}
                   </Badge>
                 )}
+                {topic.source_urls?.length > 0 && (
+                  <>
+                    {topic.source_urls.slice(0, 3).map((url: string) => {
+                      const domain = url.replace(/https?:\/\/(www\.)?/, "").split("/")[0];
+                      return (
+                        <a
+                          key={url}
+                          href={url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-xs text-gray-400 hover:text-gray-700 underline underline-offset-2"
+                        >
+                          {domain}
+                        </a>
+                      );
+                    })}
+                  </>
+                )}
+                {topic.scraped_at && (
+                  <span className="text-xs text-gray-300">
+                    {new Date(topic.scraped_at).toLocaleDateString("en-US", {
+                      month: "short",
+                      day: "numeric",
+                      year: "numeric",
+                    })}
+                  </span>
+                )}
               </div>
-
-              {topic.summary && (
-                <p className="text-sm text-gray-500 leading-snug line-clamp-2">
-                  {topic.summary}
-                </p>
-              )}
-
-              {topic.source_urls?.length > 0 && (
-                <div className="flex gap-2 flex-wrap">
-                  {topic.source_urls.slice(0, 3).map((url: string) => {
-                    const domain = url.replace(/https?:\/\/(www\.)?/, "").split("/")[0];
-                    return (
-                      <a
-                        key={url}
-                        href={url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-xs text-gray-400 hover:text-gray-700 underline underline-offset-2"
-                      >
-                        {domain}
-                      </a>
-                    );
-                  })}
-                </div>
-              )}
             </div>
 
             {activeTab === "pending" && <TopicActions topicId={topic.id} />}

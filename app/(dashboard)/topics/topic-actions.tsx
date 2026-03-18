@@ -57,7 +57,7 @@ export default function TopicActions({ topicId }: { topicId: string }) {
       </Button>
       <Button
         size="sm"
-        className="text-xs h-7 bg-gray-900 hover:bg-gray-700"
+        className="text-xs h-7 bg-gray-900 hover:bg-gray-700 text-white"
         disabled={!!loading}
         onClick={handleDraft}
       >
