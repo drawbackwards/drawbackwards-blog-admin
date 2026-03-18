@@ -1,4 +1,5 @@
 import { unstable_noStore as noStore } from "next/cache";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import PostActions from "./post-actions";
 
@@ -62,6 +63,12 @@ export default async function PostsPage() {
               </div>
 
               <div className="flex items-center gap-3 flex-wrap">
+                <Link
+                  href={`/posts/${post.id}/preview`}
+                  className="text-xs text-gray-400 hover:text-gray-700 underline underline-offset-2"
+                >
+                  Preview
+                </Link>
                 {post.pr_number && (
                   <a
                     href={`https://github.com/drawbackwards/drawbackwards-blog-content/pull/${post.pr_number}`}
