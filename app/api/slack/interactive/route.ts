@@ -6,6 +6,8 @@ const SIGNING_SECRET = process.env.SLACK_SIGNING_SECRET ?? "";
 const GITHUB_ACTIONS_TOKEN = process.env.GITHUB_ACTIONS_TOKEN ?? "";
 const WORKFLOW_URL =
   "https://api.github.com/repos/drawbackwards/drawbackwards-blog-content/actions/workflows/generate-draft.yml/dispatches";
+const SCRAPE_WORKFLOW_URL =
+  "https://api.github.com/repos/drawbackwards/drawbackwards-blog-content/actions/workflows/scrape-topics.yml/dispatches";
 
 // ─── Slack signature verification ─────────────────────────────────────────────
 
@@ -62,7 +64,43 @@ export async function POST(request: Request) {
   const actions = payload.actions as Array<Record<string, unknown>> | undefined;
   const action = actions?.[0];
 
-  if (!action || action.action_id !== "draft_topic") {
+  if (!action) {
+    return new Response("", { status: 200 });
+  }
+
+  // ── Handle "Run scraper again" ─────────────────────────────────────────────
+  if (action.action_id === "run_scraper") {
+    const responseUrl = payload.response_url as string | undefined;
+    let ok = false;
+    if (GITHUB_ACTIONS_TOKEN) {
+      const resp = await fetch(SCRAPE_WORKFLOW_URL, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${GITHUB_ACTIONS_TOKEN}`,
+          Accept: "application/vnd.github+json",
+          "X-GitHub-Api-Version": "2022-11-28",
+        },
+        body: JSON.stringify({ ref: "main", inputs: { count: "5" } }),
+      });
+      ok = resp.ok || resp.status === 204;
+    }
+    if (responseUrl) {
+      await fetch(responseUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          replace_original: false,
+          response_type: "in_channel",
+          text: ok
+            ? "Running scraper — new topics will appear in Slack shortly."
+            : "⚠️ Failed to trigger scraper. Try from the dashboard.",
+        }),
+      });
+    }
+    return new Response("", { status: 200 });
+  }
+
+  if (action.action_id !== "draft_topic") {
     // Unknown action — ack and ignore
     return new Response("", { status: 200 });
   }
