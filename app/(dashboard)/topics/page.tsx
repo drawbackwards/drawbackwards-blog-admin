@@ -23,7 +23,7 @@ export default async function TopicsPage() {
     .order("scraped_at", { ascending: false });
 
   const pending = topics?.filter((t) => t.status === "pending") ?? [];
-  const others = topics?.filter((t) => t.status !== "pending") ?? [];
+  const approved = topics?.filter((t) => t.status === "approved") ?? [];
 
   return (
     <div className="space-y-6">
@@ -31,7 +31,7 @@ export default async function TopicsPage() {
         <div>
           <h1 className="text-xl font-semibold text-gray-900">Topics</h1>
           <p className="text-sm text-gray-500 mt-0.5">
-            {pending.length} pending · {others.length} actioned
+            {pending.length} pending{approved.length > 0 ? ` · ${approved.length} queued` : ""}
           </p>
         </div>
         <RunScraperButton />
@@ -101,25 +101,21 @@ export default async function TopicsPage() {
         ))}
       </div>
 
-      {others.length > 0 && (
-        <details className="group">
-          <summary className="text-sm text-gray-400 cursor-pointer hover:text-gray-600 select-none">
-            Show actioned topics ({others.length})
-          </summary>
-          <div className="mt-2 space-y-2">
-            {others.map((topic) => (
-              <div
-                key={topic.id}
-                className="bg-white border border-gray-100 rounded-lg p-4 flex items-center justify-between gap-4 opacity-60"
-              >
-                <span className="text-sm text-gray-700">{topic.title}</span>
-                <Badge variant="outline" className="text-xs capitalize shrink-0">
-                  {topic.status}
-                </Badge>
-              </div>
-            ))}
-          </div>
-        </details>
+      {approved.length > 0 && (
+        <div className="space-y-2">
+          <p className="text-xs text-gray-400 uppercase tracking-wide font-medium">Queued for drafting</p>
+          {approved.map((topic) => (
+            <div
+              key={topic.id}
+              className="bg-white border border-gray-100 rounded-lg p-3 flex items-center justify-between gap-4 opacity-60"
+            >
+              <span className="text-sm text-gray-700">{topic.title}</span>
+              <span className="text-xs text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full shrink-0">
+                queued
+              </span>
+            </div>
+          ))}
+        </div>
       )}
     </div>
   );
