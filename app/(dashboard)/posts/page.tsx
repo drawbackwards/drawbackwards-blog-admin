@@ -14,10 +14,12 @@ const statusColors: Record<string, string> = {
 export default async function PostsPage() {
   const supabase = createClient();
 
-  const { data: posts } = await supabase
+  const { data: posts, error } = await supabase
     .from("posts")
-    .select("*, topics(title)")
+    .select("*")
     .order("created_at", { ascending: false });
+
+  if (error) console.error("posts fetch error:", error);
 
   const active = posts?.filter((p) => p.status !== "published") ?? [];
   const published = posts?.filter((p) => p.status === "published") ?? [];
