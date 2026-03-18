@@ -1,5 +1,4 @@
 import { createClient } from "@/lib/supabase/server";
-import { Badge } from "@/components/ui/badge";
 import PostActions from "./post-actions";
 
 export const dynamic = "force-dynamic";
