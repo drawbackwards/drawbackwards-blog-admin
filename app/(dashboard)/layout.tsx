@@ -14,7 +14,7 @@ export default function DashboardLayout({
             Topics
           </Link>
           <Link href="/posts" className="text-gray-600 hover:text-gray-900 transition-colors">
-            Posts
+            Blog Drafts
           </Link>
         </div>
       </nav>

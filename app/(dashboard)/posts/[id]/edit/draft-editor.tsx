@@ -40,7 +40,7 @@ export default function DraftEditor({
     const res = await fetch(`/api/save-draft/${postId}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ body, sha, branch, slug, frontmatter }),
+      body: JSON.stringify({ postId, body, sha, branch, slug, frontmatter }),
     });
 
     const json = await res.json();

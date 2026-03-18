@@ -1,10 +1,11 @@
 import { NextResponse } from "next/server";
+import { createClient } from "@/lib/supabase/server";
 
 const GITHUB_TOKEN = process.env.GITHUB_ACTIONS_TOKEN ?? "";
 const REPO = "drawbackwards/drawbackwards-blog-content";
 
 export async function POST(request: Request) {
-  const { body, sha, branch, slug, frontmatter } = await request.json();
+  const { postId, body, sha, branch, slug, frontmatter } = await request.json();
 
   if (!body || !sha || !branch || !slug) {
     return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
@@ -36,6 +37,16 @@ export async function POST(request: Request) {
   if (!resp.ok) {
     const err = await resp.json();
     return NextResponse.json({ error: err.message ?? "GitHub error" }, { status: resp.status });
+  }
+
+  // Mark post as "Editing" (review) if it was still on first draft
+  if (postId) {
+    const supabase = createClient();
+    await supabase
+      .from("posts")
+      .update({ status: "review" })
+      .eq("id", postId)
+      .eq("status", "drafting");
   }
 
   return NextResponse.json({ ok: true });
