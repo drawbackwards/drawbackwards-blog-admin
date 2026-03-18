@@ -1,3 +1,4 @@
+import { unstable_noStore as noStore } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import PostActions from "./post-actions";
 
@@ -12,6 +13,7 @@ const statusColors: Record<string, string> = {
 };
 
 export default async function PostsPage() {
+  noStore();
   const supabase = createClient();
 
   const { data: posts, error } = await supabase

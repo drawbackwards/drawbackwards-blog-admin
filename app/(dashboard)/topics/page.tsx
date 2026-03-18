@@ -1,3 +1,4 @@
+import { unstable_noStore as noStore } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { Badge } from "@/components/ui/badge";
 import TopicActions from "./topic-actions";
@@ -13,6 +14,7 @@ const audienceColors: Record<string, string> = {
 };
 
 export default async function TopicsPage() {
+  noStore();
   const supabase = createClient();
 
   const { data: topics } = await supabase
