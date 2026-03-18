@@ -69,6 +69,12 @@ export default async function PostsPage() {
                 >
                   Preview
                 </Link>
+                <Link
+                  href={`/posts/${post.id}/edit`}
+                  className="text-xs text-gray-400 hover:text-gray-700 underline underline-offset-2"
+                >
+                  Edit
+                </Link>
                 {post.pr_number && (
                   <a
                     href={`https://github.com/drawbackwards/drawbackwards-blog-content/pull/${post.pr_number}`}
