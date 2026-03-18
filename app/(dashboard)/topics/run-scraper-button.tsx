@@ -6,22 +6,27 @@ export default function RunScraperButton() {
   const [state, setState] = useState<"idle" | "loading" | "done" | "error">(
     "idle"
   );
+  const [errorMsg, setErrorMsg] = useState("");
 
   async function handleClick() {
     setState("loading");
+    setErrorMsg("");
     try {
       const resp = await fetch("/api/run-scraper", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ count: 7 }),
       });
-      if (!resp.ok) throw new Error(await resp.text());
+      const data = await resp.json();
+      if (!resp.ok) {
+        setErrorMsg(data.error ?? `HTTP ${resp.status}`);
+        throw new Error(data.error);
+      }
       setState("done");
-      // Reset after 4 s so the button is usable again
       setTimeout(() => setState("idle"), 4000);
     } catch {
       setState("error");
-      setTimeout(() => setState("idle"), 4000);
+      setTimeout(() => { setState("idle"); setErrorMsg(""); }, 8000);
     }
   }
 
@@ -40,12 +45,17 @@ export default function RunScraperButton() {
   };
 
   return (
-    <button
-      onClick={handleClick}
-      disabled={state === "loading" || state === "done"}
-      className={`text-sm px-3 py-1.5 rounded-md font-medium transition-colors ${styles[state]}`}
-    >
-      {labels[state]}
-    </button>
+    <div className="flex flex-col items-end gap-1">
+      <button
+        onClick={handleClick}
+        disabled={state === "loading" || state === "done"}
+        className={`text-sm px-3 py-1.5 rounded-md font-medium transition-colors ${styles[state]}`}
+      >
+        {labels[state]}
+      </button>
+      {errorMsg && (
+        <p className="text-xs text-red-600 max-w-xs text-right">{errorMsg}</p>
+      )}
+    </div>
   );
 }
