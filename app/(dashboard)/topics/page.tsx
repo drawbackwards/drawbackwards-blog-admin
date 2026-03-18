@@ -1,4 +1,5 @@
 import { unstable_noStore as noStore } from "next/cache";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { Badge } from "@/components/ui/badge";
 import TopicActions from "./topic-actions";
@@ -13,38 +14,76 @@ const audienceColors: Record<string, string> = {
   All: "bg-gray-100 text-gray-600",
 };
 
-export default async function TopicsPage() {
+const tabs = ["pending", "approved", "rejected"] as const;
+type Tab = (typeof tabs)[number];
+
+export default async function TopicsPage({
+  searchParams,
+}: {
+  searchParams: { tab?: string };
+}) {
   noStore();
   const supabase = createClient();
+
+  const activeTab: Tab = (tabs as readonly string[]).includes(searchParams.tab ?? "")
+    ? (searchParams.tab as Tab)
+    : "pending";
 
   const { data: topics } = await supabase
     .from("topics")
     .select("*")
     .order("scraped_at", { ascending: false });
 
-  const pending = topics?.filter((t) => t.status === "pending") ?? [];
-  const approved = topics?.filter((t) => t.status === "approved") ?? [];
+  const counts = {
+    pending: topics?.filter((t) => t.status === "pending").length ?? 0,
+    approved: topics?.filter((t) => t.status === "approved").length ?? 0,
+    rejected: topics?.filter((t) => t.status === "rejected").length ?? 0,
+  };
+
+  const visible = topics?.filter((t) => t.status === activeTab) ?? [];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
+      {/* Header */}
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-xl font-semibold text-gray-900">Topics</h1>
-          <p className="text-sm text-gray-500 mt-0.5">
-            {pending.length} pending{approved.length > 0 ? ` · ${approved.length} queued` : ""}
-          </p>
-        </div>
+        <h1 className="text-xl font-semibold text-gray-900">Topics</h1>
         <RunScraperButton />
       </div>
 
-      {pending.length === 0 && (
+      {/* Tabs */}
+      <div className="flex gap-1 border-b border-gray-100">
+        {tabs.map((tab) => (
+          <Link
+            key={tab}
+            href={`/topics?tab=${tab}`}
+            className={`px-4 py-2 text-sm font-medium capitalize border-b-2 -mb-px transition-colors ${
+              activeTab === tab
+                ? "border-gray-900 text-gray-900"
+                : "border-transparent text-gray-400 hover:text-gray-700"
+            }`}
+          >
+            {tab}
+            {counts[tab] > 0 && (
+              <span className="ml-1.5 text-xs text-gray-400">
+                {counts[tab]}
+              </span>
+            )}
+          </Link>
+        ))}
+      </div>
+
+      {/* Empty state */}
+      {visible.length === 0 && (
         <p className="text-sm text-gray-400 py-8 text-center">
-          No pending topics. Run the scraper to find new ones.
+          {activeTab === "pending"
+            ? "No pending topics. Run the scraper to find new ones."
+            : `No ${activeTab} topics.`}
         </p>
       )}
 
+      {/* Topic list */}
       <div className="space-y-2">
-        {pending.map((topic) => (
+        {visible.map((topic) => (
           <div
             key={topic.id}
             className="bg-white border border-gray-100 rounded-lg p-4 flex items-start justify-between gap-4"
@@ -96,27 +135,10 @@ export default async function TopicsPage() {
               )}
             </div>
 
-            <TopicActions topicId={topic.id} />
+            {activeTab === "pending" && <TopicActions topicId={topic.id} />}
           </div>
         ))}
       </div>
-
-      {approved.length > 0 && (
-        <div className="space-y-2">
-          <p className="text-xs text-gray-400 uppercase tracking-wide font-medium">Queued for drafting</p>
-          {approved.map((topic) => (
-            <div
-              key={topic.id}
-              className="bg-white border border-gray-100 rounded-lg p-3 flex items-center justify-between gap-4 opacity-60"
-            >
-              <span className="text-sm text-gray-700">{topic.title}</span>
-              <span className="text-xs text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full shrink-0">
-                queued
-              </span>
-            </div>
-          ))}
-        </div>
-      )}
     </div>
   );
 }
