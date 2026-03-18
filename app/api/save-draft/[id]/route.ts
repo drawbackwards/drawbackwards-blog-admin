@@ -3,10 +3,7 @@ import { NextResponse } from "next/server";
 const GITHUB_TOKEN = process.env.GITHUB_ACTIONS_TOKEN ?? "";
 const REPO = "drawbackwards/drawbackwards-blog-content";
 
-export async function POST(
-  request: Request,
-  { params }: { params: { id: string } }
-) {
+export async function POST(request: Request) {
   const { body, sha, branch, slug, frontmatter } = await request.json();
 
   if (!body || !sha || !branch || !slug) {
