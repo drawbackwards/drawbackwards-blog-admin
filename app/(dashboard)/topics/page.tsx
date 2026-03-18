@@ -14,6 +14,25 @@ const audienceColors: Record<string, string> = {
   All: "bg-gray-100 text-gray-600",
 };
 
+function nextMondayAt9UTC(): string {
+  const now = new Date();
+  const day = now.getUTCDay(); // 0=Sun, 1=Mon, ..., 6=Sat
+  const daysUntilMonday = day === 1 && now.getUTCHours() < 9 ? 0 : (8 - day) % 7 || 7;
+  const next = new Date(Date.UTC(
+    now.getUTCFullYear(),
+    now.getUTCMonth(),
+    now.getUTCDate() + daysUntilMonday,
+    9, 0, 0
+  ));
+  return next.toLocaleString("en-US", {
+    month: "numeric",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+    timeZone: "UTC",
+  });
+}
+
 const tabs = ["pending", "approved", "rejected"] as const;
 type Tab = (typeof tabs)[number];
 
@@ -47,7 +66,12 @@ export default async function TopicsPage({
       {/* Header */}
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-semibold text-gray-900">Topics</h1>
-        <RunScraperButton />
+        <div className="flex items-center gap-3">
+          <span className="text-xs text-gray-400">
+            Next Scrape: {nextMondayAt9UTC()}
+          </span>
+          <RunScraperButton />
+        </div>
       </div>
 
       {/* Tabs */}
