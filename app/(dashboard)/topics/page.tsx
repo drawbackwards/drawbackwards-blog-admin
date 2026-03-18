@@ -11,6 +11,7 @@ const audienceColors: Record<string, string> = {
   PM: "bg-blue-50 text-blue-700",
   "UX Leader": "bg-purple-50 text-purple-700",
   CEO: "bg-amber-50 text-amber-700",
+  Founder: "bg-green-50 text-green-700",
   All: "bg-gray-100 text-gray-600",
 };
 
