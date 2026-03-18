@@ -118,7 +118,7 @@ export default async function TopicsPage({
               </span>
 
               {topic.summary && (
-                <p className="text-sm text-gray-500 leading-snug line-clamp-2">
+                <p className="text-sm text-gray-500 leading-snug">
                   {topic.summary}
                 </p>
               )}
