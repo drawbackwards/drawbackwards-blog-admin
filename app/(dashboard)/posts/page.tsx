@@ -141,7 +141,7 @@ export default async function PostsPage({
 
               {/* Actions */}
               <div className="shrink-0">
-                <PostActions postId={post.id} status={post.status} slug={post.slug} />
+                <PostActions postId={post.id} status={post.status} />
               </div>
             </div>
           );
